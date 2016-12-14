@@ -19,12 +19,27 @@ public class Application {
     }
 
     public static void main(String[] args){
+        List<Country> countries = fetchAllCountries();
+        printCountries(countries);
+
+    }
+
+    private static void printCountries(List<Country> countries){
         System.out.printf("Country\t\t\t\t\t\t\t\tInternet Users\t\t\tLiteracy%n");
-        System.out.printf("--------------------------------------------------------------------%n");
-        for(Country country : fetchAllCountries()){
-            System.out.printf("%s\t\t\t\t\t\t\t\t%.2f\t\t\t%.2f",
-                    country.getName(), country.getInternetUsers(),
-                    country.getAdultLiteracyRate());
+        System.out.printf("----------------------------------------------------------------------%n");
+        for(Country country : countries){
+            System.out.printf("%-40s", country.getName());
+            if(country.getInternetUsers() == null){
+                System.out.printf("--\t\t\t\t\t\t");
+            }else{
+                System.out.printf("%.2f\t\t\t\t\t", country.getInternetUsers());
+            }
+
+            if(country.getAdultLiteracyRate() == null){
+                System.out.printf("--%n");
+            }else{
+                System.out.printf("%.2f%n", country.getAdultLiteracyRate());
+            }
         }
     }
 
@@ -36,4 +51,5 @@ public class Application {
         session.close();
         return countries;
     }
+    
 }

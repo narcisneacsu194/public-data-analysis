@@ -6,28 +6,30 @@ import javax.persistence.*;
 public class Country {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int code;
+    private String code;
 
     @Column
     private String name;
 
     @Column
-    private double internetUsers;
+    private Double internetUsers;
 
     @Column
-    private double adultLiteracyRate;
+    private Double adultLiteracyRate;
 
-    public Country(String name, double internetUsers, double adultLiteracyRate) {
+    public Country(){}
+
+    public Country(String name, Double internetUsers, Double adultLiteracyRate) {
         this.name = name;
         this.internetUsers = internetUsers;
         this.adultLiteracyRate = adultLiteracyRate;
     }
 
-    public int getCode() {
+    public String getCode() {
         return code;
     }
 
-    public void setCode(int code) {
+    public void setCode(String code) {
         this.code = code;
     }
 
@@ -39,19 +41,19 @@ public class Country {
         this.name = name;
     }
 
-    public double getInternetUsers() {
+    public Double getInternetUsers() {
         return internetUsers;
     }
 
-    public void setInternetUsers(double internetUsers) {
+    public void setInternetUsers(Double internetUsers) {
         this.internetUsers = internetUsers;
     }
 
-    public double getAdultLiteracyRate() {
+    public Double getAdultLiteracyRate() {
         return adultLiteracyRate;
     }
 
-    public void setAdultLiteracyRate(double adultLiteracyRate) {
+    public void setAdultLiteracyRate(Double adultLiteracyRate) {
         this.adultLiteracyRate = adultLiteracyRate;
     }
 }

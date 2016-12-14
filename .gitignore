@@ -65,3 +65,5 @@ Temporary Items
 .idea/modules.xml
 .idea/workspace.xml
 *.class
+data/worldbank.trace.db
+.idea/libraries/Gradle__com_h2database_h2_1_4_191.xml

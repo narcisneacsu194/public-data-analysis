@@ -45,3 +45,22 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+.idea/copyright/profiles_settings.xml
+.idea/compiler.xml
+.idea/gradle.xml
+.idea/libraries/Gradle__antlr_antlr_2_7_7.xml
+.idea/libraries/Gradle__com_fasterxml_classmate_1_3_0.xml
+.idea/libraries/Gradle__dom4j_dom4j_1_6_1.xml
+.idea/libraries/Gradle__javax_transaction_jta_1_1.xml
+.idea/libraries/Gradle__org_apache_geronimo_specs_geronimo_jta_1_1_spec_1_1_1.xml
+.idea/libraries/Gradle__org_hibernate_common_hibernate_commons_annotations_5_0_1_Final.xml
+.idea/libraries/Gradle__org_hibernate_hibernate_core_5_1_0_Final.xml
+.idea/libraries/Gradle__org_hibernate_javax_persistence_hibernate_jpa_2_1_api_1_0_0_Final.xml
+.idea/libraries/Gradle__org_javassist_javassist_3_20_0_GA.xml
+.idea/libraries/Gradle__org_jboss_jandex_2_0_0_Final.xml
+.idea/libraries/Gradle__org_jboss_logging_jboss_logging_3_3_0_Final.xml
+.idea/libraries/Gradle__xml_apis_xml_apis_1_0_b2.xml
+*.iml
+.idea/misc.xml
+.idea/modules.xml
+.idea/workspace.xml

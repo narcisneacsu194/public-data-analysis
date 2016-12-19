@@ -69,3 +69,4 @@ data/worldbank.trace.db
 .idea/libraries/Gradle__com_h2database_h2_1_4_191.xml
 data/worldbank.db.mv.db
 data/worldbank.mv.db.mv.db
+.idea/vcs.xml

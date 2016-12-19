@@ -5,7 +5,6 @@ import javax.persistence.*;
 @Entity
 public class Country {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String code;
 
     @Column
@@ -19,7 +18,8 @@ public class Country {
 
     public Country(){}
 
-    public Country(String name, Double internetUsers, Double adultLiteracyRate) {
+    public Country(String code, String name, Double internetUsers, Double adultLiteracyRate) {
+        this.code = code;
         this.name = name;
         this.internetUsers = internetUsers;
         this.adultLiteracyRate = adultLiteracyRate;

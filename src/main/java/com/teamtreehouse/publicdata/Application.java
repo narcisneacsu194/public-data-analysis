@@ -152,8 +152,11 @@ public class Application {
                     }
                 }
 
-                if(countryName != null && code != null){
-                    country = new Country(code, countryName, internetUsers, adultLiteracy);
+                if(code != null && countryName != null){
+                    country = new Country(new Country
+                            .CountryBuilder(code, countryName).
+                            withInternetUsers(internetUsers).
+                            withAdultLiteracyRate(adultLiteracy));
                     addCountryToDatabase(country);
                     break;
                 }else{

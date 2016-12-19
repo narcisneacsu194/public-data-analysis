@@ -18,11 +18,11 @@ public class Country {
 
     public Country(){}
 
-    public Country(String code, String name, Double internetUsers, Double adultLiteracyRate) {
-        this.code = code;
-        this.name = name;
-        this.internetUsers = internetUsers;
-        this.adultLiteracyRate = adultLiteracyRate;
+    public Country(CountryBuilder builder) {
+        this.code = builder.code;
+        this.name = builder.name;
+        this.internetUsers = builder.internetUsers;
+        this.adultLiteracyRate = builder.adultLiteracyRate;
     }
 
     public String getCode() {
@@ -55,5 +55,30 @@ public class Country {
 
     public void setAdultLiteracyRate(Double adultLiteracyRate) {
         this.adultLiteracyRate = adultLiteracyRate;
+    }
+
+    public static class CountryBuilder{
+        private String code;
+
+        private String name;
+
+        private Double internetUsers;
+
+        private Double adultLiteracyRate;
+
+        public CountryBuilder(String code, String name){
+            this.code = code;
+            this.name = name;
+        }
+
+        public CountryBuilder withInternetUsers(Double internetUsers){
+            this.internetUsers = internetUsers;
+            return this;
+        }
+
+        public CountryBuilder withAdultLiteracyRate(Double adultLiteracyRate){
+            this.adultLiteracyRate = adultLiteracyRate;
+            return this;
+        }
     }
 }

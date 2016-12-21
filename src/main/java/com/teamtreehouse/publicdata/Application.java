@@ -11,6 +11,8 @@ import org.hibernate.service.ServiceRegistry;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class Application {
@@ -50,7 +52,7 @@ public class Application {
                     viewCountries();
                     break;
                 case 2:
-//                    viewStatistics();
+                    viewStatistics();
                     break;
                 case 3:
                     addCountry();
@@ -318,5 +320,206 @@ public class Application {
         session.getTransaction().commit();
         session.close();
     }
-    
+
+    private static void viewStatistics(){
+        Double correlationCoefficient = getCorrelationCoefficient();
+        Country country = getCountryWithMaxInternetUsage();
+        System.out.printf("%nCountry with greatest internet usage percent: %s --> %.2f%n",
+                country.getName(), country.getInternetUsers());
+        country = getCountryWithMinInternetUsage();
+        System.out.printf("%nCountry with least internet usage percent: %s --> %.2f%n",
+                country.getName(), country.getInternetUsers());
+        country = getCountryWithMaxAdultLiteracy();
+        System.out.printf("%nCountry with greatest adult literacy percent: %s --> %.2f%n",
+                country.getName(), country.getAdultLiteracyRate());
+        country = getCountryWithMinAdultLiteracy();
+        System.out.printf("%nCountry with least adult literacy percent: %s --> %.2f%n",
+                country.getName(), country.getAdultLiteracyRate());
+        System.out.printf("Correlation coefficient (Internet Usage <-> Adult Literacy): %.2f",
+                correlationCoefficient);
+    }
+
+    // Find the country with the maximum Internet Usage percentage.
+    private static Country getCountryWithMaxInternetUsage(){
+        List<Country> countries = fetchAllCountries();
+        List<Country> nonNullInternetUsageCountries = new ArrayList<>();
+        Country topCountryByInternetUsage;
+
+        for(Country country : countries){
+            if(country.getInternetUsers() != null){
+                nonNullInternetUsageCountries.add(country);
+            }
+        }
+
+        topCountryByInternetUsage = nonNullInternetUsageCountries.stream().max((o1, o2) -> {
+            if(o1.getInternetUsers() > o2.getInternetUsers()){
+                return 1;
+            }else if(o1.getInternetUsers() < o2.getInternetUsers()){
+                return -1;
+            }
+            return 0;
+        }).get();
+
+        return topCountryByInternetUsage;
+    }
+
+    // Find the country with the minimum Internet Usage percentage.
+    private static Country getCountryWithMinInternetUsage(){
+        List<Country> countries = fetchAllCountries();
+        List<Country> nonNullInternetUsageCountries = new ArrayList<>();
+        Country bottomCountryByInternetUsage;
+
+        for(Country country : countries){
+            if(country.getInternetUsers() != null){
+                nonNullInternetUsageCountries.add(country);
+            }
+        }
+
+        bottomCountryByInternetUsage = nonNullInternetUsageCountries.stream().max((o1, o2) -> {
+            if(o1.getInternetUsers() > o2.getInternetUsers()){
+                return -1;
+            }else if(o1.getInternetUsers() < o2.getInternetUsers()){
+                return 1;
+            }
+            return 0;
+        }).get();
+
+        return bottomCountryByInternetUsage;
+    }
+
+    // Find the country with the maximum Adult Literacy percentage.
+    private static Country getCountryWithMaxAdultLiteracy(){
+        List<Country> countries = fetchAllCountries();
+        List<Country> nonNullAdultLiteracyCountries = new ArrayList<>();
+        Country topCountryByAdultLiteracy;
+
+        for(Country country : countries){
+            if(country.getAdultLiteracyRate() != null){
+                nonNullAdultLiteracyCountries.add(country);
+            }
+        }
+
+        topCountryByAdultLiteracy = nonNullAdultLiteracyCountries.stream().max((o1, o2) -> {
+            if(o1.getAdultLiteracyRate() > o2.getAdultLiteracyRate()){
+                return 1;
+            }else if(o1.getAdultLiteracyRate() < o2.getAdultLiteracyRate()){
+                return -1;
+            }
+            return 0;
+        }).get();
+
+        return topCountryByAdultLiteracy;
+    }
+
+    // Find the country with the minimum Adult Literacy percentage.
+    private static Country getCountryWithMinAdultLiteracy(){
+        List<Country> countries = fetchAllCountries();
+        List<Country> nonNullAdultLiteracyCountries = new ArrayList<>();
+        Country bottomCountryByAdultLiteracy;
+
+        for(Country country : countries){
+            if(country.getAdultLiteracyRate() != null){
+                nonNullAdultLiteracyCountries.add(country);
+            }
+        }
+
+        bottomCountryByAdultLiteracy = nonNullAdultLiteracyCountries.stream().max((o1, o2) -> {
+            if(o1.getAdultLiteracyRate() > o2.getAdultLiteracyRate()){
+                return -1;
+            }else if(o1.getAdultLiteracyRate() < o2.getAdultLiteracyRate()){
+                return 1;
+            }
+            return 0;
+        }).get();
+
+        return bottomCountryByAdultLiteracy;
+    }
+
+    // Get the correlation coefficient using the Internet Usage and Adult Literacy column values
+    private static double getCorrelationCoefficient(){
+        Double correlationCoefficient;
+        List<Double> internetUsageList = getInternetUsageValuesSubtractedByMeanList();
+        List<Double> adultLiteracyList = getAdultLiteracyValuesSubtractedByMeanList();
+        Double product = 0.0;
+        Double internetUsageSquared = 0.0;
+        Double adultLiteracySquared = 0.0;
+
+        for(int i = 0; i < internetUsageList.size();i++){
+            product = product + internetUsageList.get(i) * adultLiteracyList.get(i);
+            internetUsageSquared = internetUsageSquared + Math.pow(internetUsageList.get(i), 2);
+            adultLiteracySquared = adultLiteracySquared + Math.pow(adultLiteracyList.get(i), 2);
+        }
+
+        correlationCoefficient = product / Math.sqrt(internetUsageSquared * adultLiteracySquared);
+
+        return correlationCoefficient;
+    }
+
+    // Gets the mean value of the Internet Usage column
+    private static double getInternetUsageMeanValue(){
+        List<Country> countries = fetchAllCountries();
+        double internetUsageMeanValue = 0.0;
+        double counter = 0.0;
+
+        for(Country country : countries){
+            if(country.getInternetUsers() != null){
+                internetUsageMeanValue += country.getInternetUsers();
+                counter += 1.0;
+            }
+        }
+
+        internetUsageMeanValue /= counter;
+
+        return internetUsageMeanValue;
+    }
+
+    // Gets the mean value of the Adult Literacy column
+    private static double getAdultLiteracyMeanValue(){
+        List<Country> countries = fetchAllCountries();
+        double adultLiteracyMeanValue = 0.0;
+        double counter = 0.0;
+
+        for(Country country : countries){
+            if(country.getAdultLiteracyRate() != null){
+                adultLiteracyMeanValue += country.getAdultLiteracyRate();
+                counter += 1.0;
+            }
+        }
+
+        adultLiteracyMeanValue /= counter;
+
+        return adultLiteracyMeanValue;
+    }
+
+
+    private static List<Double> getInternetUsageValuesSubtractedByMeanList(){
+        List<Double> internetUsageList = new ArrayList<>();
+        List<Country> countries = fetchAllCountries();
+
+        for(Country country : countries){
+            if(country.getInternetUsers() != null && country.getAdultLiteracyRate() != null){
+                internetUsageList.add(
+                        country.getInternetUsers() -
+                                getInternetUsageMeanValue());
+            }
+        }
+
+        return internetUsageList;
+    }
+
+    private static List<Double> getAdultLiteracyValuesSubtractedByMeanList(){
+        List<Double> adultLiteracyList = new ArrayList<>();
+        List<Country> countries = fetchAllCountries();
+
+        for(Country country : countries){
+            if(country.getInternetUsers() != null && country.getAdultLiteracyRate() != null){
+                adultLiteracyList.add(
+                        country.getAdultLiteracyRate() -
+                                getAdultLiteracyMeanValue());
+            }
+        }
+
+        return adultLiteracyList;
+    }
+
 }

@@ -1,6 +1,5 @@
 package com.teamtreehouse.publicdata;
 
-import com.teamtreehouse.publicdata.model.Country;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -12,8 +11,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
+
+import com.teamtreehouse.publicdata.model.Country;
 
 public class Application {
     private static final SessionFactory sessionFactory = buildSessionFactory();
@@ -27,18 +27,40 @@ public class Application {
 
     public static void main(String[] args){
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-        int choice = 0;
+        int choice;
+        boolean quitVariable = false;
 
         while(true){
             System.out.printf("%n%n1. View data table%n2. View statistics%n3. Add a country%n");
-            System.out.printf("4. Edit a country%n5. Delete a country%n%n");
+            System.out.printf("4. Edit a country%n5. Delete a country%n6. Quit%n%n");
             System.out.printf("Choose:  ");
 
             try {
                 choice = Integer.parseInt(bufferedReader.readLine());
-                if(choice < 1 || choice > 5){
-                    System.out.printf("%nThe value you entered is not between the 1-5 range.%n");
+                if(choice < 1 || choice > 6){
+                    System.out.printf("%nThe value you entered is not between the 1-6 range.%n");
                 }
+
+                switch(choice){
+                    case 1:
+                        viewCountries();
+                        break;
+                    case 2:
+                        viewStatistics();
+                        break;
+                    case 3:
+                        addCountry();
+                        break;
+                    case 4:
+                        updateCountry();
+                        break;
+                    case 5:
+                        deleteCountry();
+                        break;
+                    case 6:
+                        quitVariable = true;
+                }
+
             }catch(IOException ioe){
                 System.out.printf("%nSomething went wrong with the stream.%n");
                 ioe.printStackTrace();
@@ -47,22 +69,8 @@ public class Application {
                 System.out.printf("%nYou are only allowed to pass in numerical values.%n");
             }
 
-            switch(choice){
-                case 1:
-                    viewCountries();
-                    break;
-                case 2:
-                    viewStatistics();
-                    break;
-                case 3:
-                    addCountry();
-                    break;
-                case 4:
-                    updateCountry();
-                    break;
-                case 5:
-                    deleteCountry();
-                    break;
+            if(quitVariable){
+                System.exit(0);
             }
         }
 
@@ -108,71 +116,71 @@ public class Application {
         return country;
     }
 
-    private static void addCountry(){
+    private static Double promptForPercent(String column, String action) throws IOException, IllegalArgumentException{
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+        String response;
+        Double percent = null;
+        System.out.printf("%nDo you want to %s a value for the %s column ? (YES/any other value)  ", column, action);
+        response = bufferedReader.readLine();
+        response = response.toUpperCase();
+        if(response.equals("Y") || response.equals("YES")){
+            System.out.printf("%nEnter an %s value (must be a decimal value between 0 and 100):  ", column);
+            percent = Double.parseDouble(bufferedReader.readLine());
+
+            if(percent < 0.0 || percent > 100.0){
+                System.out.printf("%nThe value you entered is not between the 0.0-100.0 range.%n");
+                System.out.printf("It is assumed that you didn't enter a value at all for the %s column.%n", column);
+                percent = null;
+            }
+        }
+
+        return percent;
+    }
+
+    // This method prompts you to put information for a new country that will be added to the database
+    private static void addCountry() throws IOException, IllegalArgumentException{
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
         Country country;
-        String code;
-        String countryName;
-        String response;
-        Double internetUsers = null;
-        Double adultLiteracy = null;
+        String code, countryName;
+        Double internetUsers, adultLiteracy;
 
-        try{
             while(true){
-                System.out.printf("%nEnter a country code (it must be the form AZB, ROM and so on): ");
+                System.out.printf("%nEnter a country code (it must be the form AZB, ROM and so on):  ");
                 code = bufferedReader.readLine();
 
-                System.out.printf("%nEnter a country name%n");
+                if(!code.matches("[a-zA-Z]+")){
+                    System.out.printf("%nThe country code must contain only letters, and must not be blank.%n");
+                    continue;
+                }
+
+                if(code.length() > 3){
+                    System.out.printf("%nThe country code must contain only three letters.%n");
+                    continue;
+                }
+
+                code = code.toUpperCase();
+
+                System.out.printf("%nEnter a country name:  ");
 
                 countryName = bufferedReader.readLine();
 
-                System.out.printf("%nDo you want to enter a value for the Internet Users column ? (YES/any other value)  ");
-                response = bufferedReader.readLine();
-                response = response.toUpperCase();
-                if(response.equals("Y") || response.equals("YES")){
-                    System.out.printf("%nEnter an Internet Users value (must be a decimal value between 0 and 100):  ");
-                    internetUsers = Double.parseDouble(bufferedReader.readLine());
-
-                    if(internetUsers < 0.0 || internetUsers > 100.0){
-                        System.out.printf("%nThe value you entered is not between the 0.0-100.0 range.%n");
-                        System.out.printf("It is assumed that you didn't enter a value at all for the Internet Users column.%n");
-                        internetUsers = null;
-                    }
+                if(!countryName.matches("[a-zA-Z]+")){
+                    System.out.printf("%nThe country name must contain only letters, and must not be blank.%n");
+                    continue;
                 }
 
-                System.out.printf("%nDo you want to enter a value for the Literacy column ? (YES/any other value)  ");
-                response = bufferedReader.readLine();
-                response = response.toUpperCase();
-                if(response.equals("Y") || response.equals("YES")){
-                    System.out.printf("%nEnter a Literacy value (must be a decimal value between 0 and 100):  ");
-                    adultLiteracy = Double.parseDouble(bufferedReader.readLine());
+                countryName = countryName.substring(0, 1).toUpperCase() + countryName.substring(1).toLowerCase();
 
-                    if(adultLiteracy < 0.0 || adultLiteracy > 100.0){
-                        System.out.printf("%nThe value you entered is not between the 0.0-100.0 range.%n");
-                        System.out.printf("It is assumed that you didn't enter a value at all for the Literacy column.%n");
-                        adultLiteracy = null;
-                    }
-                }
+                internetUsers = promptForPercent("Internet Users", "enter");
+                adultLiteracy = promptForPercent("Adult Literacy", "enter");
 
-                if(code != null && countryName != null){
                     country = new Country(new Country
                             .CountryBuilder(code, countryName).
                             withInternetUsers(internetUsers).
                             withAdultLiteracyRate(adultLiteracy));
                     addCountryToDatabase(country);
                     break;
-                }else{
-                    System.out.printf("%nYou didn't provide a code or name for the country.%n");
-                }
             }
-
-        }catch(IOException ioe){
-            System.out.printf("%nSomething went wrong with the stream.%n");
-            ioe.printStackTrace();
-            System.exit(0);
-        }catch(IllegalArgumentException iae){
-            System.out.printf("%nYou are only allowed to pass in numerical values.%n");
-        }
     }
 
     // Adds a country object to the database
@@ -184,24 +192,28 @@ public class Application {
         session.close();
     }
 
-    private static void updateCountry(){
+    // This method prompts you to put new information for a selected country from the database
+    private static void updateCountry() throws IOException, IllegalArgumentException{
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-        String code;
+        String code, response, countryName;
         Country country;
-        String response;
-        String name;
-        Double internetUsers;
-        Double adultLiteracy;
+        Double internetUsers, adultLiteracy;
 
-        try{
             while(true){
-                System.out.printf("%nEnter the code of the country you want to edit:  ");
+                System.out.printf("%nEnter the code of the country you want to edit (it must be the form AZB, ROM and so on):  ");
                 code = bufferedReader.readLine();
 
-                if(code.equals("")){
-                    System.out.printf("%nYou didn't enter any code value%n");
+                if(!code.matches("[a-zA-Z]+")){
+                    System.out.printf("%nThe country code must contain only letters, and must not be blank.%n");
                     continue;
                 }
+
+                if(code.length() > 3){
+                    System.out.printf("%nThe country code must contain only three letters.%n");
+                    continue;
+                }
+
+                code = code.toUpperCase();
 
                 country = getCountryByCode(code);
                 if(country == null){
@@ -209,66 +221,54 @@ public class Application {
                     continue;
                 }
 
+                System.out.printf("%nDo you want to edit the code for country \"%s\" ? (YES/any other value):  ", country.getName());
+                response = bufferedReader.readLine();
+                response = response.toUpperCase();
+
+                if(response.equals("Y") || response.equals("YES")){
+                    System.out.printf("%nEnter the new code for country %s:  ", country.getName());
+                    code = bufferedReader.readLine();
+                    if(!code.matches("[a-zA-Z]+")){
+                        System.out.printf("%nThe country code must contain only letters, and must not be blank.%n");
+                        continue;
+                    }
+
+                    if(code.length() > 3){
+                        System.out.printf("%nThe country code must contain only three letters.%n");
+                        continue;
+                    }
+
+                    code = code.toUpperCase();
+                    country.setCode(code);
+
+                }
+
                 System.out.printf("%nDo you want to edit the country name ? (YES/any other value):  ");
                 response = bufferedReader.readLine();
                 response = response.toUpperCase();
 
                 if(response.equals("Y") || response.equals("YES")){
-                    System.out.printf("%nEnter a new name for the selected country:  ");
-                    name = bufferedReader.readLine();
-                    if(name.equals("")){
-                        System.out.printf("%nYou didn't enter anything. Try again.%n");
+                    System.out.printf("%nEnter a new name for country %s:  ", country.getName());
+                    countryName = bufferedReader.readLine();
+
+                    if(!countryName.matches("[a-zA-Z]+")){
+                        System.out.printf("%nThe country name must contain only letters, and must not be blank.%n");
                         continue;
                     }
 
-                    country.setName(name);
+                    countryName = countryName.substring(0, 1).toUpperCase() + countryName.substring(1).toLowerCase();
+
+                    country.setName(countryName);
                 }
 
-                System.out.printf("%nDo you want to edit the Internet Usage value ? (YES/any other value):  ");
-                response = bufferedReader.readLine();
-                response = response.toUpperCase();
-                if(response.equals("Y") || response.equals("YES")){
-                    System.out.printf("%nEnter an Internet Users value (must be a decimal value between 0 and 100):  ");
-                    internetUsers = Double.parseDouble(bufferedReader.readLine());
-
-                    if(internetUsers < 0.0 || internetUsers > 100.0){
-                        System.out.printf("%nThe value you entered is not between the 0.0-100.0 range.%n");
-                        System.out.printf("It is assumed that you didn't enter a value at all for the Internet Users column.%n");
-                        internetUsers = null;
-                    }
-
-                    country.setInternetUsers(internetUsers);
-                }else{
-                    System.out.printf("%nIt is assumed that you do not wish to add an Internet Users value for your country.%n");
-                }
-
-                System.out.printf("%nDo you want to edit the Literacy value ? (YES/any other value):  ");
-                response = bufferedReader.readLine();
-                response = response.toUpperCase();
-                if(response.equals("Y") || response.equals("YES")){
-                    System.out.printf("%nEnter a Literacy value (must be a decimal value between 0 and 100):  ");
-                    adultLiteracy = Double.parseDouble(bufferedReader.readLine());
-
-                    if(adultLiteracy < 0.0 || adultLiteracy > 100.0){
-                        System.out.printf("%nThe value you entered is not between the 0.0-100.0 range.%n");
-                        System.out.printf("It is assumed that you didn't enter a value at all for the Literacy column.%n");
-                    }
-
-                    country.setAdultLiteracyRate(adultLiteracy);
-                }else{
-                    System.out.printf("%nIt is assumed that you do not wish to add an Literacy value for your country.%n");
-                }
+                internetUsers = promptForPercent("Internet Users", "edit");
+                adultLiteracy = promptForPercent("Adult Literacy", "edit");
+                country.setInternetUsers(internetUsers);
+                country.setAdultLiteracyRate(adultLiteracy);
 
                 updateCountryFromDatabase(country);
                 break;
             }
-        }catch(IOException ioe){
-            System.out.printf("%nSomething went wrong with the stream.%n");
-            ioe.printStackTrace();
-            System.exit(0);
-        }catch(IllegalArgumentException iae){
-            System.out.printf("%nYou are only allowed to pass in numerical values.%n");
-        }
     }
 
     // Persists the changes you made to a specified country object
@@ -280,20 +280,27 @@ public class Application {
         session.close();
     }
 
-    private static void deleteCountry(){
+    // This method prompts you for a code of a country you want to remove from the database
+    private static void deleteCountry() throws IOException{
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
         Country country;
         String code;
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
 
-        try{
             while(true){
-                System.out.printf("%nEnter the code of the country you want to delete:  ");
+                System.out.printf("%nEnter the code of the country you want to delete (it must be the form AZB, ROM and so on):  ");
                 code = bufferedReader.readLine();
 
-                if(code.equals("")){
-                    System.out.printf("%nYou didn't enter any code value%n");
+                if(!code.matches("[a-zA-Z]+")){
+                    System.out.printf("%nThe country code must contain only letters, and must not be blank.%n");
                     continue;
                 }
+
+                if(code.length() > 3){
+                    System.out.printf("%nThe country code must contain only three letters.%n");
+                    continue;
+                }
+
+                code = code.toUpperCase();
 
                 country = getCountryByCode(code);
                 if(country == null){
@@ -304,12 +311,6 @@ public class Application {
                 deleteCountryFromDatabase(country);
                 break;
             }
-        }catch(IOException ioe){
-            System.out.printf("%nSomething went wrong with the stream.%n");
-            ioe.printStackTrace();
-            System.exit(0);
-        }
-
     }
 
     // Deletes a country of your choice
@@ -321,6 +322,8 @@ public class Application {
         session.close();
     }
 
+    // This method prints out the follwoing statistics: min, max of Internet usage and adult literacy,
+    // and the correlation coefficient between the two columns
     private static void viewStatistics(){
         Double correlationCoefficient = getCorrelationCoefficient();
         Country country = getCountryWithMaxInternetUsage();
@@ -341,11 +344,10 @@ public class Application {
 
     // Find the country with the maximum Internet Usage percentage.
     private static Country getCountryWithMaxInternetUsage(){
-        List<Country> countries = fetchAllCountries();
         List<Country> nonNullInternetUsageCountries = new ArrayList<>();
         Country topCountryByInternetUsage;
 
-        for(Country country : countries){
+        for(Country country : fetchAllCountries()){
             if(country.getInternetUsers() != null){
                 nonNullInternetUsageCountries.add(country);
             }
@@ -365,11 +367,10 @@ public class Application {
 
     // Find the country with the minimum Internet Usage percentage.
     private static Country getCountryWithMinInternetUsage(){
-        List<Country> countries = fetchAllCountries();
         List<Country> nonNullInternetUsageCountries = new ArrayList<>();
         Country bottomCountryByInternetUsage;
 
-        for(Country country : countries){
+        for(Country country : fetchAllCountries()){
             if(country.getInternetUsers() != null){
                 nonNullInternetUsageCountries.add(country);
             }
@@ -389,11 +390,10 @@ public class Application {
 
     // Find the country with the maximum Adult Literacy percentage.
     private static Country getCountryWithMaxAdultLiteracy(){
-        List<Country> countries = fetchAllCountries();
         List<Country> nonNullAdultLiteracyCountries = new ArrayList<>();
         Country topCountryByAdultLiteracy;
 
-        for(Country country : countries){
+        for(Country country : fetchAllCountries()){
             if(country.getAdultLiteracyRate() != null){
                 nonNullAdultLiteracyCountries.add(country);
             }
@@ -413,11 +413,10 @@ public class Application {
 
     // Find the country with the minimum Adult Literacy percentage.
     private static Country getCountryWithMinAdultLiteracy(){
-        List<Country> countries = fetchAllCountries();
         List<Country> nonNullAdultLiteracyCountries = new ArrayList<>();
         Country bottomCountryByAdultLiteracy;
 
-        for(Country country : countries){
+        for(Country country : fetchAllCountries()){
             if(country.getAdultLiteracyRate() != null){
                 nonNullAdultLiteracyCountries.add(country);
             }
@@ -457,11 +456,10 @@ public class Application {
 
     // Gets the mean value of the Internet Usage column
     private static double getInternetUsageMeanValue(){
-        List<Country> countries = fetchAllCountries();
         double internetUsageMeanValue = 0.0;
         double counter = 0.0;
 
-        for(Country country : countries){
+        for(Country country : fetchAllCountries()){
             if(country.getInternetUsers() != null){
                 internetUsageMeanValue += country.getInternetUsers();
                 counter += 1.0;
@@ -475,11 +473,10 @@ public class Application {
 
     // Gets the mean value of the Adult Literacy column
     private static double getAdultLiteracyMeanValue(){
-        List<Country> countries = fetchAllCountries();
         double adultLiteracyMeanValue = 0.0;
         double counter = 0.0;
 
-        for(Country country : countries){
+        for(Country country : fetchAllCountries()){
             if(country.getAdultLiteracyRate() != null){
                 adultLiteracyMeanValue += country.getAdultLiteracyRate();
                 counter += 1.0;
@@ -492,11 +489,11 @@ public class Application {
     }
 
 
+    //This method is used to calculate the correlation coefficient
     private static List<Double> getInternetUsageValuesSubtractedByMeanList(){
         List<Double> internetUsageList = new ArrayList<>();
-        List<Country> countries = fetchAllCountries();
 
-        for(Country country : countries){
+        for(Country country : fetchAllCountries()){
             if(country.getInternetUsers() != null && country.getAdultLiteracyRate() != null){
                 internetUsageList.add(
                         country.getInternetUsers() -
@@ -507,11 +504,11 @@ public class Application {
         return internetUsageList;
     }
 
+    // This method is used to calculate the correlation coefficient
     private static List<Double> getAdultLiteracyValuesSubtractedByMeanList(){
         List<Double> adultLiteracyList = new ArrayList<>();
-        List<Country> countries = fetchAllCountries();
 
-        for(Country country : countries){
+        for(Country country : fetchAllCountries()){
             if(country.getInternetUsers() != null && country.getAdultLiteracyRate() != null){
                 adultLiteracyList.add(
                         country.getAdultLiteracyRate() -

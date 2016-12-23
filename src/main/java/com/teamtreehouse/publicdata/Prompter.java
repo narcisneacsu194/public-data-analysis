@@ -90,7 +90,7 @@ public class Prompter {
     private Double promptForPercent(String column, String action) throws IOException, IllegalArgumentException{
         String response;
         Double percent = null;
-        System.out.printf("%nDo you want to %s a value for the %s column ? (YES/any other value)  ", column, action);
+        System.out.printf("%nDo you want to %s the value for the %s column ? (YES/any other value)  ", column, action);
         response = bufferedReader.readLine();
         response = response.toUpperCase();
         if(response.equals("Y") || response.equals("YES")){
@@ -114,7 +114,7 @@ public class Prompter {
         Double internetUsers, adultLiteracy;
 
         while(true){
-            System.out.printf("%nEnter a country code (it must be the form AZB, ROM and so on):  ");
+            System.out.printf("%nEnter a country code (it must be of the form AZB, ROM and so on):  ");
             code = bufferedReader.readLine();
 
             if(!code.matches("[a-zA-Z]+")){
@@ -159,7 +159,7 @@ public class Prompter {
         Double internetUsers, adultLiteracy;
 
         while(true){
-            System.out.printf("%nEnter the code of the country you want to edit (it must be the form AZB, ROM and so on):  ");
+            System.out.printf("%nEnter the code of the country you want to edit (it must be of the form AZB, ROM and so on):  ");
             code = bufferedReader.readLine();
 
             if(!code.matches("[a-zA-Z]+")){
@@ -214,7 +214,7 @@ public class Prompter {
         String code;
 
         while(true){
-            System.out.printf("%nEnter the code of the country you want to delete (it must be the form AZB, ROM and so on):  ");
+            System.out.printf("%nEnter the code of the country you want to delete (it must be of the form AZB, ROM and so on):  ");
             code = bufferedReader.readLine();
 
             if(!code.matches("[a-zA-Z]+")){

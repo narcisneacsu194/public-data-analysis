@@ -1,12 +1,5 @@
 package com.teamtreehouse.publicdata;
 
-import org.hibernate.Criteria;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.boot.MetadataSources;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.service.ServiceRegistry;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -14,16 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.teamtreehouse.publicdata.model.Country;
+import com.teamtreehouse.publicdata.dao.SimpleCountryDAO;
 
 public class Application {
-    private static final SessionFactory sessionFactory = buildSessionFactory();
 
-    // Builds the session factory. A session factory is used to generate database sessions.
-    // A session is constituted of one or more SQL statements executed at a time.
-    private static SessionFactory buildSessionFactory(){
-        final ServiceRegistry registry = new StandardServiceRegistryBuilder().configure().build();
-        return new MetadataSources(registry).buildMetadata().buildSessionFactory();
-    }
+    private static final SimpleCountryDAO simpleCountryDAO = new SimpleCountryDAO();
 
     public static void main(String[] args){
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
@@ -78,10 +66,9 @@ public class Application {
 
     // Lists all the rows of the Country table
     private static void viewCountries(){
-        List<Country> countries = fetchAllCountries();
         System.out.printf("%nCode\t\t\t\tCountry\t\t\t\t\t\t\t\tInternet Users\t\t\t\tLiteracy%n");
         System.out.printf("-----------------------------------------------------------------------------------------------%n");
-        for(Country country : countries){
+        for(Country country : simpleCountryDAO.fetchAllCountries()){
             System.out.printf("%-20s", country.getCode());
             System.out.printf("%-40s", country.getName());
             if(country.getInternetUsers() == null){
@@ -96,24 +83,6 @@ public class Application {
                 System.out.printf("%.2f%n", country.getAdultLiteracyRate());
             }
         }
-    }
-
-    // Gets all the country objects available in the database.
-    @SuppressWarnings("unchecked")
-    private static List<Country> fetchAllCountries(){
-        Session session = sessionFactory.openSession();
-        Criteria criteria = session.createCriteria(Country.class);
-        List<Country> countries = criteria.list();
-        session.close();
-        return countries;
-    }
-
-    // Gets a country object by a unique code you specify
-    private static Country getCountryByCode(String code){
-        Session session = sessionFactory.openSession();
-        Country country = session.get(Country.class, code);
-        session.close();
-        return country;
     }
 
     private static Double promptForPercent(String column, String action) throws IOException, IllegalArgumentException{
@@ -178,18 +147,9 @@ public class Application {
                             .CountryBuilder(code, countryName).
                             withInternetUsers(internetUsers).
                             withAdultLiteracyRate(adultLiteracy));
-                    addCountryToDatabase(country);
+                simpleCountryDAO.addCountry(country);
                     break;
             }
-    }
-
-    // Adds a country object to the database
-    private static void addCountryToDatabase(Country country){
-        Session session = sessionFactory.openSession();
-        session.beginTransaction();
-        session.save(country);
-        session.getTransaction().commit();
-        session.close();
     }
 
     // This method prompts you to put new information for a selected country from the database
@@ -215,7 +175,7 @@ public class Application {
 
                 code = code.toUpperCase();
 
-                country = getCountryByCode(code);
+                country = simpleCountryDAO.getCountryByCode(code);
                 if(country == null){
                     System.out.printf("%nThe country you tried to get is not in the database. Try again.%n");
                     continue;
@@ -266,18 +226,9 @@ public class Application {
                 country.setInternetUsers(internetUsers);
                 country.setAdultLiteracyRate(adultLiteracy);
 
-                updateCountryFromDatabase(country);
+                simpleCountryDAO.updateCountry(country);
                 break;
             }
-    }
-
-    // Persists the changes you made to a specified country object
-    private static void updateCountryFromDatabase(Country country){
-        Session session = sessionFactory.openSession();
-        session.beginTransaction();
-        session.update(country);
-        session.getTransaction().commit();
-        session.close();
     }
 
     // This method prompts you for a code of a country you want to remove from the database
@@ -302,24 +253,15 @@ public class Application {
 
                 code = code.toUpperCase();
 
-                country = getCountryByCode(code);
+                country = simpleCountryDAO.getCountryByCode(code);
                 if(country == null){
                     System.out.printf("%nThe country you tried to get is not in the database. Try again.%n");
                     continue;
                 }
 
-                deleteCountryFromDatabase(country);
+                simpleCountryDAO.deleteCountry(country);
                 break;
             }
-    }
-
-    // Deletes a country of your choice
-    private static void deleteCountryFromDatabase(Country country){
-        Session session = sessionFactory.openSession();
-        session.beginTransaction();
-        session.delete(country);
-        session.getTransaction().commit();
-        session.close();
     }
 
     // This method prints out the follwoing statistics: min, max of Internet usage and adult literacy,
@@ -347,7 +289,7 @@ public class Application {
         List<Country> nonNullInternetUsageCountries = new ArrayList<>();
         Country topCountryByInternetUsage;
 
-        for(Country country : fetchAllCountries()){
+        for(Country country : simpleCountryDAO.fetchAllCountries()){
             if(country.getInternetUsers() != null){
                 nonNullInternetUsageCountries.add(country);
             }
@@ -370,7 +312,7 @@ public class Application {
         List<Country> nonNullInternetUsageCountries = new ArrayList<>();
         Country bottomCountryByInternetUsage;
 
-        for(Country country : fetchAllCountries()){
+        for(Country country : simpleCountryDAO.fetchAllCountries()){
             if(country.getInternetUsers() != null){
                 nonNullInternetUsageCountries.add(country);
             }
@@ -393,7 +335,7 @@ public class Application {
         List<Country> nonNullAdultLiteracyCountries = new ArrayList<>();
         Country topCountryByAdultLiteracy;
 
-        for(Country country : fetchAllCountries()){
+        for(Country country : simpleCountryDAO.fetchAllCountries()){
             if(country.getAdultLiteracyRate() != null){
                 nonNullAdultLiteracyCountries.add(country);
             }
@@ -416,7 +358,7 @@ public class Application {
         List<Country> nonNullAdultLiteracyCountries = new ArrayList<>();
         Country bottomCountryByAdultLiteracy;
 
-        for(Country country : fetchAllCountries()){
+        for(Country country : simpleCountryDAO.fetchAllCountries()){
             if(country.getAdultLiteracyRate() != null){
                 nonNullAdultLiteracyCountries.add(country);
             }
@@ -459,7 +401,7 @@ public class Application {
         double internetUsageMeanValue = 0.0;
         double counter = 0.0;
 
-        for(Country country : fetchAllCountries()){
+        for(Country country : simpleCountryDAO.fetchAllCountries()){
             if(country.getInternetUsers() != null){
                 internetUsageMeanValue += country.getInternetUsers();
                 counter += 1.0;
@@ -476,7 +418,7 @@ public class Application {
         double adultLiteracyMeanValue = 0.0;
         double counter = 0.0;
 
-        for(Country country : fetchAllCountries()){
+        for(Country country : simpleCountryDAO.fetchAllCountries()){
             if(country.getAdultLiteracyRate() != null){
                 adultLiteracyMeanValue += country.getAdultLiteracyRate();
                 counter += 1.0;
@@ -493,7 +435,7 @@ public class Application {
     private static List<Double> getInternetUsageValuesSubtractedByMeanList(){
         List<Double> internetUsageList = new ArrayList<>();
 
-        for(Country country : fetchAllCountries()){
+        for(Country country : simpleCountryDAO.fetchAllCountries()){
             if(country.getInternetUsers() != null && country.getAdultLiteracyRate() != null){
                 internetUsageList.add(
                         country.getInternetUsers() -
@@ -508,7 +450,7 @@ public class Application {
     private static List<Double> getAdultLiteracyValuesSubtractedByMeanList(){
         List<Double> adultLiteracyList = new ArrayList<>();
 
-        for(Country country : fetchAllCountries()){
+        for(Country country : simpleCountryDAO.fetchAllCountries()){
             if(country.getInternetUsers() != null && country.getAdultLiteracyRate() != null){
                 adultLiteracyList.add(
                         country.getAdultLiteracyRate() -

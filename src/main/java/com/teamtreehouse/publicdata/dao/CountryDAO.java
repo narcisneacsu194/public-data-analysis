@@ -10,4 +10,9 @@ public interface CountryDAO {
     void addCountry(Country country);
     void updateCountry(Country country);
     void deleteCountry(Country country);
+    Country getCountryWithMaxInternetUsage();
+    Country getCountryWithMinInternetUsage();
+    Country getCountryWithMaxAdultLiteracy();
+    Country getCountryWithMinAdultLiteracy();
+    double getCorrelationCoefficient();
 }
